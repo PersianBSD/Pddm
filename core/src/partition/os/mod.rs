@@ -6,4 +6,3 @@ pub mod linux;
 
 #[cfg(target_os = "macos")]
 pub mod mac;
-

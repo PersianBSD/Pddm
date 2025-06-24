@@ -12,7 +12,7 @@ use windows::{
 };
 use wmi::{COMLibrary, Variant, WMIConnection};
 
-pub fn list_disks_smart() -> Result<Vec<DiskInfo>, Box<dyn std::error::Error>> {
+pub fn smart_disks_list() -> Result<Vec<DiskInfo>, Box<dyn std::error::Error>> {
     let com_con = COMLibrary::new()?;
     let wmi_con = WMIConnection::new(com_con.into())?;
     let wmi_results: Vec<HashMap<String, Variant>> =
@@ -41,11 +41,11 @@ pub fn list_disks_smart() -> Result<Vec<DiskInfo>, Box<dyn std::error::Error>> {
                 continue;
             }
 
-            // گرفتن سایز دیسک
             let mut out_buffer = [0u8; std::mem::size_of::<DISK_GEOMETRY_EX>() + 1024];
             let mut returned = 0u32;
-            let size = if unsafe {
-                DeviceIoControl(
+
+            let size = unsafe {
+                let res = DeviceIoControl(
                     h,
                     IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
                     None,
@@ -54,65 +54,57 @@ pub fn list_disks_smart() -> Result<Vec<DiskInfo>, Box<dyn std::error::Error>> {
                     out_buffer.len() as u32,
                     Some(&mut returned),
                     None,
-                )
-            }
-            .is_ok()
-            {
-                let geometry = unsafe { &*(out_buffer.as_ptr() as *const DISK_GEOMETRY_EX) };
-                Some(geometry.DiskSize as u64)
-            } else {
-                None
+                );
+
+                if let Ok(_) = res {
+                    let geometry = &*(out_buffer.as_ptr() as *const DISK_GEOMETRY_EX);
+                    Some(geometry.DiskSize as u64)
+                } else {
+                    None
+                }
             };
 
             unsafe {
                 let _ = CloseHandle(h);
             }
 
-            // مقایسه DeviceID با contains روی lowercase
-            let norm_path = path.to_ascii_lowercase();
+            let norm_path = format!("\\\\.\\physicaldrive{}", i);
             let extra = wmi_results.iter().find(|d| {
-                d.get("DeviceID")
-                    .and_then(|v| {
-                        if let Variant::String(s) = v {
-                            Some(s.to_ascii_lowercase().contains(&norm_path))
-                        } else {
-                            None
-                        }
-                    })
-                    .unwrap_or(false)
+                d.get("DeviceID").and_then(|v| {
+                    if let Variant::String(s) = v {
+                        Some(s.to_ascii_lowercase().contains(&norm_path))
+                    } else {
+                        None
+                    }
+                }).unwrap_or(false)
             });
 
-            let model = extra
-                .and_then(|d| d.get("Model"))
-                .and_then(|v| match v {
-                    Variant::String(s) => Some(s.clone()),
-                    _ => None,
-                });
-
-            let serial = extra
-                .and_then(|d| d.get("SerialNumber"))
-                .and_then(|v| match v {
-                    Variant::String(s) => Some(s.clone()),
-                    _ => None,
-                });
-
-            let is_removable = extra
-                .and_then(|d| d.get("MediaType"))
-                .map(|v| match v {
-                    Variant::String(s) => s.to_lowercase().contains("removable"),
-                    _ => false,
-                })
-                .unwrap_or(false);
+            let model = extra.and_then(|d| extract_string(d, "Model"));
+            let serial = extra.and_then(|d| extract_string(d, "SerialNumber"));
+            let partition_style = extra.and_then(|d| extract_string(d, "PartitionStyle"));
 
             disks.push(DiskInfo {
-                name: path,
-                size_gb: size.unwrap_or(0) / 1_000_000_000,
-                is_removable,
+                name: path.clone(),
+                size_gb: size.unwrap_or(0),
+                is_removable: false, // Already known from WMI but ignored here
                 model,
                 serial,
+                partition_style,
+                bus_type: extra.and_then(|d| extract_string(d, "BusType")),
+                media_type: extra.and_then(|d| extract_string(d, "MediaType")),         
             });
         }
     }
 
     Ok(disks)
+}
+
+fn extract_string(map: &HashMap<String, Variant>, key: &str) -> Option<String> {
+    map.get(key).and_then(|v| {
+        if let Variant::String(s) = v {
+            Some(s.clone())
+        } else {
+            None
+        }
+    })
 }

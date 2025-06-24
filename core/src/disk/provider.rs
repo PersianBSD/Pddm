@@ -1,6 +1,3 @@
-use std::error::Error;
-use crate::disk::os::windows::list_disks_smart;
-
 #[derive(Debug, Clone)]
 pub struct DiskInfo {
     pub name: String,
@@ -8,9 +5,8 @@ pub struct DiskInfo {
     pub is_removable: bool,
     pub model: Option<String>,
     pub serial: Option<String>,
+    pub partition_style : Option<String>,
+    pub bus_type: Option<String>,       
+    pub media_type: Option<String>, 
 }
 
-pub fn smart_list_disks() -> Result<Vec<DiskInfo>, Box<dyn Error>> {
-    let disks = list_disks_smart()?; // فقط تابع جامع که ترکیب WMI و DeviceIo است
-    Ok(disks)
-}
