@@ -57,7 +57,7 @@ pub fn smart_partition_list() -> Result<Vec<PartitionInfo>, Box<dyn std::error::
     let result = partitions
         .into_iter()
         .map(|p| PartitionInfo {
-            name: p.drive_letter.clone().unwrap_or_else(|| "<no name>".into()),
+            partition_name: p.drive_letter.clone().unwrap_or_else(|| "<no name>".into()),
             mount_point: p.drive_letter.clone().map(|s| format!("{}:\\", s)),
             file_system: p.file_system_type,
             total_space: p.size,

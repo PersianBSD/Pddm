@@ -72,7 +72,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // گروه‌بندی پارتیشن‌ها بر اساس نام دیسک
     let mut disk_part_map: HashMap<String, Vec<_>> = HashMap::new();
     for p in partitions {
-        if let Some(disk_name) = &p.name {
+        if let Some(partition_name) = &p.partition_name {
             disk_part_map.entry(disk_name.clone()).or_default().push(p);
         }
     }
@@ -95,12 +95,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("Partition | FS    | Size (GB) | GUID");
         println!("{}", "—".repeat(80));
 
-        if let Some(parts) = disk_part_map.get(&disk.name) {
+        if let Some(parts) = disk_part_map.get(&disk.disk_name) {
             for part in parts {
                 let size = part.total_space.unwrap_or(0) / 1024 / 1024 / 1024;
                 println!(
                     "{:<9} | {:<5} | {:>9} | {}",
-                    part.name,
+                    part.partition_name,
                     part.file_system.clone().unwrap_or("-".into()),
                     size,
                     part.guid_type.clone().unwrap_or("-".into())

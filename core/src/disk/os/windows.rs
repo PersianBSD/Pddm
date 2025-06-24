@@ -84,7 +84,7 @@ pub fn smart_disks_list() -> Result<Vec<DiskInfo>, Box<dyn std::error::Error>> {
             let partition_style = extra.and_then(|d| extract_string(d, "PartitionStyle"));
 
             disks.push(DiskInfo {
-                name: path.clone(),
+                disk_name: path.clone(),
                 size_gb: size.unwrap_or(0),
                 is_removable: false, // Already known from WMI but ignored here
                 model,

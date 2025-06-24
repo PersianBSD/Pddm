@@ -1,6 +1,6 @@
 #[derive(Debug, Clone)]
 pub struct DiskInfo {
-    pub name: String,
+    pub disk_name: String,
     pub size_gb: u64,
     pub is_removable: bool,
     pub model: Option<String>,

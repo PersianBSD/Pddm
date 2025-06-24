@@ -1,7 +1,7 @@
 // core/src/partition/provider.rs
 #[derive(Debug, Clone)]
 pub struct PartitionInfo {
-    pub name: String,
+    pub partition_name: String,
     pub mount_point: Option<String>,
     pub file_system: Option<String>,
     pub total_space: Option<u64>,
