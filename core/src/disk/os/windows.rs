@@ -89,7 +89,7 @@ pub fn smart_disks_list() -> Result<Vec<DiskInfo>, Box<dyn std::error::Error>> {
                 is_removable: false, // Already known from WMI but ignored here
                 model,
                 serial,
-                partition_style,
+                partition_style: partition_style.clone(),
                 bus_type: extra.and_then(|d| extract_string(d, "BusType")),
                 media_type: extra.and_then(|d| extract_string(d, "MediaType")),         
             });

@@ -74,7 +74,7 @@ pub fn smart_partition_list() -> Result<Vec<PartitionInfo>, Box<dyn std::error::
             is_boot: p.is_boot,
             is_system: p.is_system,
             is_hidden: p.is_hidden,
-            guid_type: p.gpt_type,
+            guid_type: p.gpt_type.clone(),
             partition_type: p.r#type,
         })
         .collect();
