@@ -61,56 +61,40 @@
 //     }
 // }
 
-use pddm_core::disk::smart::smart_disks_list;
-use pddm_core::partition::smart::smart_partition_list;
-use std::collections::HashMap;
+use pddm_core::partition::local::get_partitions;
+use pddm_core::disk::os::windows::smart_disks_list;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let disks = smart_disks_list()?;
-    let partitions = smart_partition_list()?;
-
-    // گروه‌بندی پارتیشن‌ها بر اساس نام دیسک
-    let mut disk_part_map: HashMap<String, Vec<_>> = HashMap::new();
-    for p in partitions {
-        if let Some(partition_name) = &p.partition_name {
-            disk_part_map.entry(disk_name.clone()).or_default().push(p);
-        }
-    }
+    let partitions = get_partitions();
 
     for (i, disk) in disks.iter().enumerate() {
-        println!("{}", "—".repeat(80));
+        println!("═══════════════════════════════════════════════════════════════════════════════════════");
         println!(
-            "Disk Num | Model         | GPT/MBR | Size (GB)"
-        );
-        println!("{}", "—".repeat(80));
-        println!(
-            "Disk {:<4} | {:<13} | {:<7} | {:>8}",
+            "Disk {} | {:<20} | {:<4} | {:>6} GB",
             i,
             disk.model.clone().unwrap_or("-".into()),
-            disk.partition_style.clone().unwrap_or("-".into()).to_lowercase(),
+            disk.partition_style.clone().unwrap_or("-".into()).to_uppercase(),
             disk.size_gb
         );
+        println!("═══════════════════════════════════════════════════════════════════════════════════════");
+        println!("Partition  | FS     | Size      | GUID");
+        println!("═══════════════════════════════════════════════════════════════════════════════════════");
 
-        println!("{}", "—".repeat(80));
-        println!("Partition | FS    | Size (GB) | GUID");
-        println!("{}", "—".repeat(80));
+        for p in partitions.iter().filter(|p| p.disk_number == Some(i as u32)) {
+            let part_label = p.mount_point.clone().unwrap_or("-".into());
+            let fs = p.file_system.clone().unwrap_or("-".into());
+            let size = p
+                .total_space
+                .map(|s| format!("{:.2} GB", s as f64 / 1e9))
+                .unwrap_or("-".into());
+            let guid = p.volume_id.clone().unwrap_or("-".into());
 
-        if let Some(parts) = disk_part_map.get(&disk.disk_name) {
-            for part in parts {
-                let size = part.total_space.unwrap_or(0) / 1024 / 1024 / 1024;
-                println!(
-                    "{:<9} | {:<5} | {:>9} | {}",
-                    part.partition_name,
-                    part.file_system.clone().unwrap_or("-".into()),
-                    size,
-                    part.guid_type.clone().unwrap_or("-".into())
-                );
-            }
-        } else {
-            println!("(No partitions found)");
+            println!("{:<10} | {:<6} | {:<9} | {}", part_label, fs, size, guid);
         }
+
+        println!();
     }
 
     Ok(())
 }
-

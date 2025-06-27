@@ -2,5 +2,6 @@
 
 pub mod disk;
 pub mod partition;
+pub mod utils; 
 
 
