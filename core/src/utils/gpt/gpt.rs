@@ -21,7 +21,6 @@ pub struct GptHeader {
     pub backup_lba: u64,
     pub first_usable_lba: u64,
     pub last_usable_lba: u64,
-    pub disk_guid: [u8; 16],
     pub entries_start_lba: u64,
     pub entries_count: u32,
     pub entry_size: u32,
