@@ -27,7 +27,4 @@ pub fn get_disk_free_space(path: &str) -> Option<(u64, u64, u64)> {
     }
 }
 
-/// تبدیل بایت به گیگابایت با دقت 2 رقم اعشار
-pub fn bytes_to_gb(bytes: u64) -> f64 {
-    ((bytes as f64) / 1_000_000_000.0 * 100.0).round() / 100.0
-}
+
