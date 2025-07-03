@@ -15,7 +15,7 @@ mod os_impl {
 
 pub struct LocalPartitionProvider;
 
-use crate::partition::provider::PartitionInfo;
+use crate::utils::types::info::PartitionInfo;
 
 pub fn get_partitions() -> Vec<PartitionInfo> {
     match os_impl::smart_partition_list() {

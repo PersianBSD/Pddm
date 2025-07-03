@@ -60,41 +60,94 @@
 //         format!("{}B", bytes)
 //     }
 // }
+//===============================================================
+// use pddm_core::partition::local::get_partitions;
+// use pddm_core::disk::os::windows::smart_disks_list;
 
-use pddm_core::partition::local::get_partitions;
-use pddm_core::disk::os::windows::smart_disks_list;
+// fn main() -> Result<(), Box<dyn std::error::Error>> {
+//     let disks = smart_disks_list()?;
+//     let partitions = get_partitions();
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let disks = smart_disks_list()?;
-    let partitions = get_partitions();
+//     for (i, disk) in disks.iter().enumerate() {
+//         println!("═══════════════════════════════════════════════════════════════════════════════════════");
+//         println!(
+//             "Disk {} | {:<20} | {:<4} | {:>6} GB",
+//             i,
+//             disk.model.clone().unwrap_or("-".into()),
+//             disk.partition_style.clone().unwrap_or("-".into()).to_uppercase(),
+//             disk.size_gb
+//         );
+//         println!("═══════════════════════════════════════════════════════════════════════════════════════");
+//         println!("Partition  | FS     | Size      | GUID");
+//         println!("═══════════════════════════════════════════════════════════════════════════════════════");
 
-    for (i, disk) in disks.iter().enumerate() {
-        println!("═══════════════════════════════════════════════════════════════════════════════════════");
-        println!(
-            "Disk {} | {:<20} | {:<4} | {:>6} GB",
-            i,
-            disk.model.clone().unwrap_or("-".into()),
-            disk.partition_style.clone().unwrap_or("-".into()).to_uppercase(),
-            disk.size_gb
-        );
-        println!("═══════════════════════════════════════════════════════════════════════════════════════");
-        println!("Partition  | FS     | Size      | GUID");
-        println!("═══════════════════════════════════════════════════════════════════════════════════════");
+//         for p in partitions.iter().filter(|p| p.disk_number == Some(i as u32)) {
+//             let part_label = p.mount_point.clone().unwrap_or("-".into());
+//             let fs = p.file_system.clone().unwrap_or("-".into());
+//             let size = p
+//                 .total_space
+//                 .map(|s| format!("{:.2} GB", s as f64 / 1e9))
+//                 .unwrap_or("-".into());
+//             let guid = p.volume_id.clone().unwrap_or("-".into());
 
-        for p in partitions.iter().filter(|p| p.disk_number == Some(i as u32)) {
-            let part_label = p.mount_point.clone().unwrap_or("-".into());
-            let fs = p.file_system.clone().unwrap_or("-".into());
-            let size = p
-                .total_space
-                .map(|s| format!("{:.2} GB", s as f64 / 1e9))
-                .unwrap_or("-".into());
-            let guid = p.volume_id.clone().unwrap_or("-".into());
+//             println!("{:<10} | {:<6} | {:<9} | {}", part_label, fs, size, guid);
+//         }
 
-            println!("{:<10} | {:<6} | {:<9} | {}", part_label, fs, size, guid);
-        }
+//         println!();
+//     }
 
-        println!();
+//     Ok(())
+// }
+// مسیر: cli/src/main.rs
+
+// use pddm_core::disk::local::get_disks;
+// use pddm_core::partition::local::get_partitions;
+// use pddm_core::utils::convert::format_bytes;
+// use pddm_core::utils::types::info::DiskInfo;
+// use pddm_core::utils::types::info::PartitionInfo;
+// fn main() {
+//     println!("\n🔍 لیست دیسک‌ها\n========================");
+//     let disks = get_disks();
+//     for (i, disk) in disks.iter().enumerate() {
+//         print_disk_info(i, disk);
+//     }
+
+//     println!("\n🧩 لیست پارتیشن‌ها\n========================");
+//     let partitions = get_partitions();
+//     for part in partitions.iter() {
+//         print_partition_info(part);
+//     }
+// }
+
+// fn print_disk_info(index: usize, disk: &DiskInfo) {
+//     println!(
+//         "Disk {idx}: {} | مدل: {} | ظرفیت: {} | {:?} | ریموت: {}",
+//         disk.disk_name,
+//         disk.model.clone().unwrap_or("-".into()),
+//         format_bytes(disk.size_gb),
+//         disk.partition_style,
+//         disk.is_removable,
+//         idx = index
+//     );
+// }
+
+// fn print_partition_info(part: &PartitionInfo) {
+//     println!(
+//         "{} | {} | مجموع: {} | آزاد: {} | برچسب: {} | GUID: {}",
+//         part.mount_point.clone().unwrap_or("-".into()),
+//         part.file_system.clone().unwrap_or("-".into()),
+//         part.total_space.map_or("-".into(), |v| format_bytes(v)),
+//         part.free_space.map_or("-".into(), |v| format_bytes(v)),
+//         part.volume_label.clone().unwrap_or("-".into()),
+//         part.guid_type.clone().unwrap_or("-".into()),
+//     );
+// }
+
+// src/main.rs
+mod tui;
+
+fn main() {
+    if let Err(e) = tui::start() {
+        eprintln!("error in run gui : {}", e);
     }
-
-    Ok(())
 }

@@ -1,4 +1,4 @@
-use crate::partition::provider::PartitionInfo;
+use crate::utils::types::info::PartitionInfo;
 use serde::Deserialize;
 use std::process::Command;
 

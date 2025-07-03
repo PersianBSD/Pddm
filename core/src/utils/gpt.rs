@@ -8,53 +8,6 @@ use crate::utils::crc::Crc32;
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::{Cursor, Read};
 
-/// GPT Header Structure (partial - for simplification)
-#[repr(C, packed)]
-#[derive(Debug, Clone, Default)]
-pub struct GptHeader {
-    pub signature: [u8; 8],
-    pub revision: u32,
-    pub header_size: u32,
-    pub crc32: u32,
-    pub reserved: u32,
-    pub current_lba: u64,
-    pub backup_lba: u64,
-    pub first_usable_lba: u64,
-    pub last_usable_lba: u64,
-    pub entries_start_lba: u64,
-    pub entries_count: u32,
-    pub entry_size: u32,
-    pub entries_crc32: u32,
-    pub version: u32,
-    pub checksum: u32,
-    pub disk_guid: GUID,
-    pub first_entry_lba: u64,
-    pub n_entries: u32,
-    pub entries_checksum: u32,
-    pub disk_guid: Uuid,
-    pub partition_entries_lba: u64,
-    pub num_partition_entries: u32,
-    pub size_of_partition_entry: u32,
-    pub reserved2: [u8; 420],
-}
-
-// gpt.rs 
-
-
-
-
-/// GPT Partition Entry Structure (128 bytes per entry)
-#[repr(C, packed)]
-#[derive(Clone, Default)]
-pub struct GptPartitionEntry {
-    pub partition_type_guid: [u8; 16],
-    pub unique_partition_guid: [u8; 16],
-    pub starting_lba: u64,
-    pub ending_lba: u64,
-    pub attributes: u64,
-    pub partition_name: [u16; 36],
-}
-
 impl fmt::Debug for GptPartitionEntry {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let name: String = String::from_utf16_lossy(&self.partition_name);
@@ -125,15 +78,6 @@ impl GptHeader {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct GptPartitionEntry {
-    pub partition_type_guid: Uuid,
-    pub unique_partition_guid: Uuid,
-    pub starting_lba: u64,
-    pub ending_lba: u64,
-    pub attributes: u64,
-    pub partition_name: String,
-}
 
 impl GptPartitionEntry {
     pub fn from_bytes(data: &[u8]) -> Option<Self> {

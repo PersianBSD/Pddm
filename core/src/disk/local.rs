@@ -15,7 +15,7 @@ mod os_impl {
 
 pub struct LocalDiskProvider;
 
-use crate::disk::provider::DiskInfo;
+use crate::utils::types::info::DiskInfo;
 
 pub fn get_disks() -> Vec<DiskInfo> {
     match os_impl::smart_disks_list() {

@@ -1,4 +1,4 @@
-use crate::disk::provider::DiskInfo;
+use crate::utils::types::info::DiskInfo;
 use std::collections::HashMap;
 use windows::{
     core::PCWSTR,

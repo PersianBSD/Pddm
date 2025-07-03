@@ -1,0 +1,83 @@
+// src/tui/mod.rs
+use std::io;
+use crossterm::{
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event as CEvent, KeyCode},
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use ratatui::{
+    backend::CrosstermBackend,
+    Terminal,
+    layout::{Layout, Constraint, Direction},
+    widgets::{Block, Borders, Row, Table, TableState},
+    style::{Style, Color},
+};
+
+pub fn start() -> Result<(), Box<dyn std::error::Error>> {
+    enable_raw_mode()?;
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    let backend = CrosstermBackend::new(stdout);
+    let mut terminal = Terminal::new(backend)?;
+
+    let res = run_app(&mut terminal);
+
+    // Clean up terminal
+    disable_raw_mode()?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableMouseCapture
+    )?;
+    terminal.show_cursor()?;
+
+    if let Err(err) = res {
+        println!("خطا: {:?}", err);
+    }
+
+    Ok(())
+}
+
+fn run_app<B: ratatui::backend::Backend>(
+    terminal: &mut Terminal<B>,
+) -> io::Result<()> {
+    loop {
+        terminal.draw(|f| {
+            let size = f.size();
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .margin(2)
+                .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
+                .split(size);
+
+            let table = Table::new(vec![
+                Row::new(vec!["1", "/dev/sda1", "ext4", "100GB", "/"]),
+                Row::new(vec!["2", "/dev/sda2", "swap", "8GB", "swap"]),
+                Row::new(vec!["3", "/dev/sda3", "ntfs", "300GB", "/data"]),
+            ])
+            .header(Row::new(vec!["#", "نام", "نوع", "حجم", "Mount"])
+                .style(Style::default().fg(Color::Yellow))
+            )
+            .block(Block::default().borders(Borders::ALL).title("پارتیشن‌ها"))
+            .widths(&[
+                Constraint::Length(3),
+                Constraint::Length(15),
+                Constraint::Length(10),
+                Constraint::Length(10),
+                Constraint::Length(10),
+            ]);
+
+            f.render_widget(table, chunks[1]);
+        })?;
+
+        if event::poll(std::time::Duration::from_millis(200))? {
+            if let CEvent::Key(key) = event::read()? {
+                if key.code == KeyCode::Char('q') {
+                    break;
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
