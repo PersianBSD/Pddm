@@ -4,13 +4,13 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-ratatui = "0.26"
-crossterm = "0.27"
+ratatui = "0.29"
+crossterm = "0.29"
 pddm_core = { path = "../core" }
 clap = { version = "4.5.1", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"] }
-sysinfo = "0.29.0"
-windows = { version = "0.54", features = [
+sysinfo = "0.35.0"
+windows = { version = "0.61.3", features = [
     "Win32_System_SystemInformation",
     "Win32_Storage_FileSystem",
     "Win32_Foundation",

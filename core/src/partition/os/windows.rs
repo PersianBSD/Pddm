@@ -3,6 +3,7 @@ use serde::Deserialize;
 use std::process::Command;
 
 
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct PartitionJson {
@@ -80,4 +81,21 @@ pub fn smart_partition_list() -> Result<Vec<PartitionInfo>, Box<dyn std::error::
         .collect();
 
     Ok(result)
+}
+
+/// Filters partitions based on disk name like \"Disk0\", \"Disk1\" etc.
+pub fn get_partitions_for_disk(disk_name: &str) -> Result<Vec<PartitionInfo>, Box<dyn std::error::Error>> {
+    let all_parts = smart_partition_list()?;
+
+    Ok(all_parts.into_iter()
+        .filter(|p| {
+            if let Some(num) = p.disk_number {
+                let matches = disk_name.ends_with(&format!("PhysicalDrive{}", num));
+                //println!("DISK_MATCH? disk_name='{}' vs num={} => {}", disk_name, num, matches);
+                matches
+            } else {
+                false
+            }
+        })
+        .collect())
 }

@@ -144,10 +144,11 @@
 // }
 
 // src/main.rs
+//use tui::tui::run_tui_interface;
 mod tui;
 
 fn main() {
-    if let Err(e) = tui::start() {
-        eprintln!("error in run gui : {}", e);
+ if let Err(e) = tui::tui::run_tui_interface() {
+        eprintln!("TUI error: {:?}", e);
     }
 }
