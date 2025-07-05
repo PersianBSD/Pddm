@@ -223,7 +223,7 @@
 
 use std::io;
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event as CEvent, KeyCode, MouseEvent},
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event as CEvent, KeyCode},// MouseEvent},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -248,7 +248,7 @@ pub fn run_tui_interface() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         terminal.draw(|f| draw_main_ui(f, &mut app))?;
 
-        if event::poll(std::time::Duration::from_millis(100))? {
+        if event::poll(std::time::Duration::from_millis(50))? {
             match event::read()? {
                 CEvent::Key(key) => {
                     if key.code == KeyCode::Char('q') {

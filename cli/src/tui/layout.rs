@@ -6,7 +6,7 @@ use ratatui::{
     widgets::{Block, Borders, Row, Table, Paragraph},
     style::{Style, Color, Modifier},
 };
-use crate::tui::state::AppState;
+use crate::tui::state::{AppState, Focus};
 
 pub fn draw_main_ui(f: &mut Frame, app: &mut AppState) {
     let area = f.area();
@@ -19,6 +19,18 @@ pub fn draw_main_ui(f: &mut Frame, app: &mut AppState) {
             Constraint::Percentage(30),
         ])
         .split(area);
+
+    // Highlight style based on focus
+    let disk_style = if app.focus == Focus::Disk {
+        Style::default().bg(Color::Blue).add_modifier(Modifier::BOLD)
+    } else {
+        Style::default()
+    };
+    let part_style = if app.focus == Focus::Partition {
+        Style::default().bg(Color::Magenta).add_modifier(Modifier::BOLD)
+    } else {
+        Style::default()
+    };
 
     // Disk Table
     let disk_rows: Vec<Row> = app.disks.iter().enumerate().map(|(i, d)| {
@@ -38,7 +50,7 @@ pub fn draw_main_ui(f: &mut Frame, app: &mut AppState) {
     ])
     .header(Row::new(vec!["#", "Device", "Model", "Size"]).style(Style::default().fg(Color::Yellow)))
     .block(Block::default().borders(Borders::ALL).title("Disks"))
-    .row_highlight_style(Style::default().bg(Color::Blue).add_modifier(Modifier::BOLD));
+    .row_highlight_style(disk_style);
 
     f.render_stateful_widget(disk_table, chunks[0], &mut app.disk_state);
 
@@ -49,7 +61,7 @@ pub fn draw_main_ui(f: &mut Frame, app: &mut AppState) {
             p.file_system.as_deref().unwrap_or("-").to_string(),
             p.mount_point.as_deref().unwrap_or("-").to_string(),
             p.volume_label.as_deref().unwrap_or("-").to_string(),
-            p.total_space.map_or("-".to_string(), |s| format!("{} GB", s / 1_073_741_824)),
+            p.total_space.map_or("0 GB".to_string(), |s| format!("{:.1} GB", s as f64 / 1_073_741_824.0)),
         ])
     }).collect();
 
@@ -62,7 +74,7 @@ pub fn draw_main_ui(f: &mut Frame, app: &mut AppState) {
     ])
     .header(Row::new(vec!["Name", "FS", "Mount", "Label", "Size"]).style(Style::default().fg(Color::Yellow)))
     .block(Block::default().borders(Borders::ALL).title("Partitions"))
-    .row_highlight_style(Style::default().bg(Color::Magenta).add_modifier(Modifier::BOLD));
+    .row_highlight_style(part_style);
 
     f.render_stateful_widget(part_table, chunks[1], &mut app.partition_state);
 
@@ -74,7 +86,7 @@ pub fn draw_main_ui(f: &mut Frame, app: &mut AppState) {
                 format!("FS: {}", p.file_system.as_deref().unwrap_or("-")),
                 format!("Label: {}", p.volume_label.as_deref().unwrap_or("-")),
                 format!("Mount: {}", p.mount_point.as_deref().unwrap_or("-")),
-                format!("Size: {}", p.total_space.map_or("-".to_string(), |s| format!("{} GB", s / 1_073_741_824))),
+                format!("Size: {}", p.total_space.map_or("0 GB".to_string(), |s| format!("{:.1} GB", s as f64 / 1_073_741_824.0))),
                 format!("Boot: {:?}", p.is_boot),
                 format!("System: {:?}", p.is_system),
                 format!("Hidden: {:?}", p.is_hidden),

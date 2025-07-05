@@ -60,12 +60,13 @@ impl AppState {
             Some(i) => (i as isize + offset).clamp(0, len.saturating_sub(1) as isize) as usize,
             None => 0,
         };
+
         self.disk_state.select(Some(i));
 
         if let Some(disk) = self.disks.get(i) {
-            self.partitions = get_partitions_for_disk(&disk.disk_name).unwrap_or_default();
-            self.partition_state = TableState::default();
-            if !self.partitions.is_empty() {
+            let parts = get_partitions_for_disk(&disk.disk_name).unwrap_or_default();
+            self.partitions = parts;
+            if !self.partitions.is_empty() && self.partition_state.selected().is_none() {
                 self.partition_state.select(Some(0));
             }
         }
